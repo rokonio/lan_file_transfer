@@ -1,8 +1,18 @@
-use std::net::TcpListener;
+mod receiver;
+mod sender;
+
+pub mod consts {
+    pub const SPEPARATOR: &str = "<SEPARATOR>";
+    pub const BUFFER_SIZE: usize = 4096;
+    pub const PORT: u16 = 5002;
+}
 
 fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("0.0.0.0:0")?;
-    let port = listener.local_addr()?.port();
-    dbg!(listener);
-    Ok(())
+    let sender = std::env::args().nth(1).unwrap() == "s";
+    if sender {
+        sender::sender_main();
+        Ok(())
+    } else {
+        receiver::receiver_main()
+    }
 }
