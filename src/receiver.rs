@@ -1,12 +1,24 @@
 use std::{
     io::Read,
-    net::{TcpListener, TcpStream},
+    net::{TcpListener, TcpStream, UdpSocket},
 };
 
 use crate::consts::*;
 
 pub fn receiver_main() -> std::io::Result<()> {
-    let listener = TcpListener::bind(("127.0.0.1", PORT))?;
+    let listener = TcpListener::bind(("0.0.0.0", 0))?;
+    let l_port = listener.local_addr().unwrap().port();
+
+    let udp = UdpSocket::bind("0.0.0.0:0").unwrap();
+    udp.set_broadcast(true).unwrap();
+
+    println!("Input sender port: ");
+    let port: u16 = text_io::read!();
+
+    for _ in 0..10 {
+        udp.send_to(&l_port.to_be_bytes(), ("255.255.255.255", port))
+            .unwrap();
+    }
 
     for stream in listener.incoming() {
         handle_client(stream.unwrap());

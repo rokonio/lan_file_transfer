@@ -4,7 +4,6 @@ mod sender;
 pub mod consts {
     pub const SPEPARATOR: &str = "<SEPARATOR>";
     pub const BUFFER_SIZE: usize = 4096;
-    pub const PORT: u16 = 5002;
 }
 
 fn main() -> std::io::Result<()> {

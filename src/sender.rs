@@ -1,14 +1,24 @@
 use std::{
     fs::File,
     io::{Read, Write},
-    net::TcpStream,
+    net::{SocketAddr, TcpStream, UdpSocket},
     path::Path,
 };
 
-use crate::consts::*;
-
 pub fn sender_main() {
-    let stream = TcpStream::connect(("127.0.0.1", PORT)).unwrap();
+    let udp = UdpSocket::bind(("0.0.0.0", 0)).unwrap();
+    let port = udp.local_addr().unwrap().port();
+    println!("Sender port is {port}");
+    let mut buf = [0; 2];
+    let stream = loop {
+        let (_, addr) = udp.recv_from(&mut buf).unwrap();
+        let port = u16::from_be_bytes(buf);
+        let socker_addr = SocketAddr::new(addr.ip(), port);
+
+        if let Ok(stream) = TcpStream::connect(socker_addr) {
+            break stream;
+        }
+    };
 
     if let Err(e) = send_file(stream, "sender_data.txt") {
         panic!("The file was not able to be sent: {e:?}");
