@@ -1,17 +1,21 @@
+use receiver::receiver_main;
+use sender::sender_main;
+
+mod header;
 mod receiver;
 mod sender;
 
-pub mod consts {
-    pub const SPEPARATOR: &str = "<SEPARATOR>";
-    pub const BUFFER_SIZE: usize = 4096;
-}
-
 fn main() -> std::io::Result<()> {
-    let sender = std::env::args().nth(1).unwrap() == "s";
-    if sender {
-        sender::sender_main();
-        Ok(())
-    } else {
-        receiver::receiver_main()
+    let end = std::env::args().nth(1).unwrap();
+    match &end[..] {
+        "s" | "send" | "sender" => {
+            sender_main();
+            Ok(())
+        }
+        "r" | "receive" | "receiver" => receiver_main(),
+        o => {
+            eprintln!("Not a valid option: {o}");
+            Ok(())
+        }
     }
 }
