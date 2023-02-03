@@ -14,8 +14,8 @@ pub enum Operation {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Header {
-    operation: Operation,
-    length: u32,
+    pub operation: Operation,
+    pub length: u32,
 }
 
 impl Header {

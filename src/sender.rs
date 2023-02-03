@@ -5,6 +5,8 @@ use std::{
     path::Path,
 };
 
+use crate::header::{Header, Operation};
+
 pub fn sender_main() {
     let stream = connect_to_receiver();
     if let Err(e) = send_file(stream, "sender_data.txt") {
@@ -37,13 +39,42 @@ fn send_file(mut stream: TcpStream, path: &str) -> std::io::Result<()> {
 
     let mut file = File::open(path)?;
     let file_size = file.metadata().unwrap().len();
-    println!("File size: {file_size}");
+    // println!("File size: {file_size}");
 
     let mut content_buffer = vec![0; file_size as usize];
     let read_amt = file.read(&mut content_buffer)?;
     println!("Bytes read from file: {read_amt}");
 
-    let written_amt = stream.write(&content_buffer)?;
-    println!("Bytes written to stream: {written_amt}");
+    send_name(&mut stream, file_name.to_str().unwrap())?;
+    send_content(&mut stream, content_buffer)?;
+    end_connection(&mut stream)?;
+    Ok(())
+}
+
+fn send_name(stream: &mut TcpStream, name: &str) -> std::io::Result<()> {
+    let name_bytes = name.as_bytes();
+    let header = Header {
+        operation: Operation::StartSendFile,
+        length: name_bytes.len() as u32,
+    };
+    stream.write_all(&header.encode())?;
+    stream.write_all(name_bytes)?;
+    Ok(())
+}
+fn send_content(stream: &mut TcpStream, content: Vec<u8>) -> std::io::Result<()> {
+    let header = Header {
+        operation: Operation::SendFileContent,
+        length: content.len() as u32,
+    };
+    stream.write_all(&header.encode())?;
+    stream.write_all(content.as_slice())?;
+    Ok(())
+}
+fn end_connection(stream: &mut TcpStream) -> std::io::Result<()> {
+    let header = Header {
+        operation: Operation::EndSendFile,
+        length: 0,
+    };
+    stream.write_all(&header.encode())?;
     Ok(())
 }

@@ -13,8 +13,8 @@ fn main() -> std::io::Result<()> {
             Ok(())
         }
         "r" | "receive" | "receiver" => receiver_main(),
-        o => {
-            eprintln!("Not a valid option: {o}");
+        other => {
+            eprintln!("Not a valid option: {other}");
             Ok(())
         }
     }
